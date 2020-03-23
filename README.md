@@ -37,6 +37,7 @@ This pipeline was designed to
    + [X] LAST (http://last.cbrc.jp/)
 
    + [X] get_the_longest_transcripts.py (https://github.com/xuzhougeng/myscripts)
+
       * [X] python3
 
    + [X] seqkit (https://github.com/shenwei356/seqkit)
