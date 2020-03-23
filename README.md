@@ -1,5 +1,7 @@
 # GeneSyntenyPipeline
 
+    SCR_018198
+
 This pipeline was designed to 
 
    - [X] draw gene synteny plot between genomes
@@ -92,7 +94,7 @@ This pipeline was designed to
 
 >  -clean Clean Temporary files:
 
->            \* lastdb files
+>            * lastdb files
 
 Example:
 
