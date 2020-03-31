@@ -99,7 +99,7 @@ Options:
 Example:
   $0 \\
       -i1 ./sp1.fa.gz -i2 ./sp2.fa.gz -g1 ./sp1.gff.gz -g2 ./sp2.gff.gz \\
-      -p1 sp1 -p2 sp2 -fmt pep -type mRNA -key ID -mp 30 -mz 10 -nsn
+      -p1 sp1 -p2 sp2 -mt pep -type mRNA -key ID -mp 30 -mz 10 -nsn
 
 Author:
   Fu-Hao Lu
