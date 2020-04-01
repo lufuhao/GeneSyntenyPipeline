@@ -478,9 +478,11 @@ if [ ! -s $path_plot/$opt_p1.$opt_p2.pdf ]; then
 		echo "CMD used: python -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout"
 		exit 100
 	fi
-	mv karyotype.pdf $path_plot/$opt_p1.$opt_p2.pdf
+	mv karyotype.pdf $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf
 	python -m jcvi.graphics.karyotype --dpi=600 --format=eps --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
+	mv karyotype.eps $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.eps
 	python -m jcvi.graphics.karyotype --dpi=600 --format=png --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
+	mv karyotype.png $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.png
 fi
 echo -e "\n\n\n"
 
