@@ -515,7 +515,7 @@ if [ -s $opt_p1.$opt_p2.duplicated.list ]; then
 	echo "Info: geneIDs with duplication: $LineNum1"
 	echo "Info: duplication IDs         : $LineNum2"
 	echo "Info: geneIDs uniq            : $LineNum3"
-	echo "Info: no duplicated geneIDs detected, final uniq synteny: $path_1to1/$opt_p1.$opt_p2.anchors.new.uniq"
+	echo "Info: final uniq synteny: $path_1to1/$opt_p1.$opt_p2.anchors.new.uniq"
 else
 	grep -v ^'#' $SimpleFile | wc -l
 	cat $opt_p1.$opt_p2.duplicated.list | wc -l
