@@ -357,6 +357,7 @@ if [ ! -z "$opt_uc2" ] && [ -s $opt_uc2 ]; then
 		echo "Error: failed to clean Subject BED file: $path_data/$opt_p2.bed.all" >&2
 		exit 100
 	fi
+	
 fi
 echo "#Step${step} Info: top 5 lines pf subject BED"
 head -n 5 $path_data/$opt_p2.bed
@@ -388,7 +389,8 @@ if [ ! -z "$opt_uc1" ] && [ -s $opt_uc1 ]; then
 		echo "Error: failed to rename Query file: $path_data/$opt_p1.$opt_fmt" >&2
 		exit 100
 	fi
-	seqkit grep -f < (grep -v ^'#' $path_data/$opt_p1.bed | cut -f 4 | sort -u ) $path_data/$opt_p1.$opt_fmt.all > $path_data/$opt_p1.$opt_fmt
+	grep -v ^'#' $path_data/$opt_p1.bed | cut -f 4 | sort -u > $path_data/$opt_p1.$opt_fmt.tmplist
+	seqkit grep -f $path_data/$opt_p1.$opt_fmt.tmplist $path_data/$opt_p1.$opt_fmt.all > $path_data/$opt_p1.$opt_fmt
 	if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p1.$opt_fmt ]; then
 		echo "Error: failed to clean Query BED file: $path_data/$opt_p1.$opt_fmt.all" >&2
 		exit 100
@@ -419,7 +421,8 @@ if [ ! -z "$opt_uc2" ] && [ -s $opt_uc2 ]; then
 		echo "Error: failed to rename Query file: $path_data/$opt_p2.$opt_fmt" >&2
 		exit 100
 	fi
-	seqkit grep -f < (grep -v ^'#' $path_data/$opt_p2.bed | cut -f 4 | sort -u ) $path_data/$opt_p2.$opt_fmt.all > $path_data/$opt_p2.$opt_fmt
+	grep -v ^'#' $path_data/$opt_p2.bed | cut -f 4 | sort -u > $path_data/$opt_p2.$opt_fmt.tmplist
+	seqkit grep -f $path_data/$opt_p2.$opt_fmt.tmplist $path_data/$opt_p2.$opt_fmt.all > $path_data/$opt_p2.$opt_fmt
 	if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
 		echo "Error: failed to clean Query BED file: $path_data/$opt_p2.$opt_fmt.all" >&2
 		exit 100
