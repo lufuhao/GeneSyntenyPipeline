@@ -71,28 +71,30 @@ Descriptions:
       5. Filter 1:1 match for furthr analyais
 
 Options:
-  -h    Print this help message
-  -i1   Query fasta file in fa.gz or fa format
-  -i2   Subject fasta file in fa.gz or fa format
-  -g1   Query genome annotation in GFF format
-  -g2   Subject genome annotation in GFF format
-  -p1   Query Prefix
-  -p2   Subject Prefix
-  -ul   Use longest transcript for each geneIDs both query and subject
-  -ul1  Use longest transcript for each query geneIDs
-  -ul2  Use longest transcript for each subject geneIDs 
-  -d    Output directory, default: .
-  -mt   Molecular type: cds/pep, default:pep
-  -type GFF feature to be extracted, default: mRNA
-  -key  GFF feature to seqID: ID/Name, default: ID
-  -cc   csscore cutoff for jcvi.compara.catalog ortholog, default: 0.7
-  -nsn  Do not strip alternative splicing (e.g. At5g06540.1 ->
+  -h   -     Print this help message
+  -i1  FILE  Query fasta file in fa.gz or fa format
+  -i2  FILE  Subject fasta file in fa.gz or fa format
+  -g1  FILE  Query genome annotation in GFF format
+  -g2  FILE  Subject genome annotation in GFF format
+  -p1  STR   Query Prefix
+  -p2  STR   Subject Prefix
+  -ul  -     Use longest transcript for each geneIDs both query and subject
+  -ul1 -     Use longest transcript for each query geneIDs
+  -ul2 -     Use longest transcript for each subject geneIDs 
+  -uc1 FILE  Use specified chromosome IDs for analysis in -g1
+  -uc2 FILE  Use specified chromosome IDs for analysis in -g2
+  -d   DIR   Output directory, default: .
+  -mt  STR   Molecular type: cds/pep, default:pep
+  -type STR  GFF feature to be extracted, default: mRNA
+  -key  STR  GFF feature to seqID: ID/Name, default: ID
+  -cc  FLOAT csscore cutoff for jcvi.compara.catalog ortholog, default: 0.7
+  -nsn  -    Do not strip alternative splicing (e.g. At5g06540.1 ->
           At5g06540) [default: False]
           --no_strip_names jcvi.compara.catalog ortholog
-  -mp   minspan for jcvi.compara.synteny screen, default: 0
-  -mz   minsize for jcvi.compara.synteny screen, default: 0
-  -clean Clean Temporary files:
-            * lastdb files
+  -mp  INT   minspan for jcvi.compara.synteny screen, default: 0
+  -mz  INT   minsize for jcvi.compara.synteny screen, default: 0
+  -clean -   Clean Temporary files:
+                * lastdb files
 
 
 
@@ -129,9 +131,14 @@ opt_nsn=0
 opt_mp=0
 opt_mz=0
 opt_clean=0
+opt_testLongest=0;
 opt_useLongest=0;
 opt_useQueryL=0;
 opt_useSubjectL=0;
+opt_uc1="";
+opt_uc2="";
+opt_BEDfil=0;
+
 
 #################### Parameters #####################################
 while [ -n "$1" ]; do
@@ -143,9 +150,11 @@ while [ -n "$1" ]; do
     -g2) opt_g2=$2;shift 2;;
     -p1) opt_p1=$2;shift 2;;
     -p2) opt_p2=$2;shift 2;;
-    -ul) opt_useLongest=1;shift;;
-    -ul1) opt_useQueryL=1;shift;;
-    -ul2) opt_useSubjectL=1;shift;;
+    -ul) opt_useLongest=1;opt_testLongest=1;shift;;
+    -ul1) opt_useQueryL=1;opt_testLongest=1;shift;;
+    -ul2) opt_useSubjectL=1;opt_testLongest=1;shift;;
+    -uc1) opt_uc1=$2;opt_BEDfil=1;shift 2;;
+    -uc2) opt_uc2=$2;opt_BEDfil=1;shift 2;;
     -d) opt_d=$2;shift 2;;
     -type) opt_type=$2;shift 2;;
     -key)  opt_key=$2;shift 2;;
@@ -192,16 +201,27 @@ if [ $? -ne 0 ]; then
 	echo "Error: CMD 'lastdb' in PROGRAM 'LAST' (http://last.cbrc.jp/) is required but not found.  Aborting..." >&2 
 	exit 127
 fi
-CmdExists 'get_the_longest_transcripts.py'
-if [ $? -ne 0 ]; then
-	echo "Error: script 'get_the_longest_transcripts.py' on https://github.com/xuzhougeng/myscripts is required but not found.  Aborting..." >&2 
-	exit 127
+if [ $opt_testLongest -eq 1 ]; then
+	CmdExists 'get_the_longest_transcripts.py'
+	if [ $? -ne 0 ]; then
+		echo "Error: script 'get_the_longest_transcripts.py' on https://github.com/xuzhougeng/myscripts is required but not found.  Aborting..." >&2 
+		exit 127
+	fi
+	CmdExists 'seqkit'
+	if [ $? -ne 0 ]; then
+		echo "Error: CMD 'seqkit' in PROGRAM 'seqkit' (https://github.com/shenwei356/seqkit) is required but not found.  Aborting..." >&2 
+		exit 127
+	fi
 fi
-CmdExists 'seqkit'
-if [ $? -ne 0 ]; then
-	echo "Error: CMD 'seqkit' in PROGRAM 'seqkit' (https://github.com/shenwei356/seqkit) is required but not found.  Aborting..." >&2 
-	exit 127
+if [ $opt_BEDfil -eq 1 ]; then
+	CmdExists 'jcvi.bed.clean.pl'
+	if [ $? -ne 0 ]; then
+		echo "Error: script 'jcvi.bed.clean.pl' in PROGRAM 'GeneSyntenyPipeline' (https://github.com/lufuhao/GeneSyntenyPipeline) is required but not found.  Aborting..." >&2 
+		exit 127
+	fi
 fi
+
+
 
 
 
@@ -295,7 +315,19 @@ if [ ! -s $path_data/$opt_p1.bed ]; then
 else
 	echo "Warnings: Step${step}: using existing Query BED: $path_data/$opt_p1.bed" >&2
 fi
-echo "#Step${step} Info: top 5 lines pf query BED"
+if [ ! -z "$opt_uc1" ] && [ -s $opt_uc1 ]; then
+	mv $path_data/$opt_p1.bed $path_data/$opt_p1.bed.all
+	if [ $? -ne 0 ]; then
+		echo "Error: failed to rename Query file: $path_data/$opt_p1.bed" >&2
+		exit 100
+	fi
+	jcvi.bed.clean.pl $path_data/$opt_p1.bed.all $opt_uc1 $path_data/$opt_p1.bed
+	if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p1.bed ]; then
+		echo "Error: failed to clean Query BED file: $path_data/$opt_p1.bed.all" >&2
+		exit 100
+	fi
+fi
+echo "#Step${step} Info: top 5 lines of query BED"
 head -n 5 $path_data/$opt_p1.bed
 
 if [ ! -s $path_data/$opt_p2.bed ]; then
@@ -313,6 +345,18 @@ if [ ! -s $path_data/$opt_p2.bed ]; then
 	fi
 else
 	echo "Warnings: Step${step}: using existing Subject BED: $path_data/$opt_p2.bed" >&2
+fi
+if [ ! -z "$opt_uc2" ] && [ -s $opt_uc2 ]; then
+	mv $path_data/$opt_p2.bed $path_data/$opt_p2.bed.all
+	if [ $? -ne 0 ]; then
+		echo "Error: failed to rename Subject file: $path_data/$opt_p2.bed" >&2
+		exit 100
+	fi
+	jcvi.bed.clean.pl $path_data/$opt_p2.bed.all $opt_uc2 $path_data/$opt_p2.bed
+	if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p2.bed ]; then
+		echo "Error: failed to clean Subject BED file: $path_data/$opt_p2.bed.all" >&2
+		exit 100
+	fi
 fi
 echo "#Step${step} Info: top 5 lines pf subject BED"
 head -n 5 $path_data/$opt_p2.bed
@@ -338,6 +382,18 @@ if [ ! -s $path_data/$opt_p1.$opt_fmt ]; then
 else
 	echo "Warnings: Step${step}: use existing file: $path_data/$opt_p1.$opt_fmt; Delete this if you have new data" >&2
 fi
+if [ ! -z "$opt_uc1" ] && [ -s $opt_uc1 ]; then
+	mv $path_data/$opt_p1.$opt_fmt $path_data/$opt_p1.$opt_fmt.all
+	if [ $? -ne 0 ]; then
+		echo "Error: failed to rename Query file: $path_data/$opt_p1.$opt_fmt" >&2
+		exit 100
+	fi
+	seqkit grep -f < (grep -v ^'#' $path_data/$opt_p1.bed | cut -f 4 | sort -u ) $path_data/$opt_p1.$opt_fmt.all > $path_data/$opt_p1.$opt_fmt
+	if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p1.$opt_fmt ]; then
+		echo "Error: failed to clean Query BED file: $path_data/$opt_p1.$opt_fmt.all" >&2
+		exit 100
+	fi
+fi
 if [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
 	if [ $opt_useSubjectL -eq 0 ]; then
 		if [[ $opt_i2 =~ ^.*\.[gG][zZ]$ ]]; then
@@ -356,6 +412,18 @@ if [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
 	fi
 else
 	echo "Warnings: Step${step}: use existing file: $path_data/$opt_p2.$opt_fmt; Delete this if you have new data" >&2
+fi
+if [ ! -z "$opt_uc2" ] && [ -s $opt_uc2 ]; then
+	mv $path_data/$opt_p2.$opt_fmt $path_data/$opt_p2.$opt_fmt.all
+	if [ $? -ne 0 ]; then
+		echo "Error: failed to rename Query file: $path_data/$opt_p2.$opt_fmt" >&2
+		exit 100
+	fi
+	seqkit grep -f < (grep -v ^'#' $path_data/$opt_p2.bed | cut -f 4 | sort -u ) $path_data/$opt_p2.$opt_fmt.all > $path_data/$opt_p2.$opt_fmt
+	if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
+		echo "Error: failed to clean Query BED file: $path_data/$opt_p2.$opt_fmt.all" >&2
+		exit 100
+	fi
 fi
 echo -e "\n\n\n"
 
