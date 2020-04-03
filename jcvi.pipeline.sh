@@ -481,9 +481,9 @@ else
 	echo "Warnings: ineuqal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_fmt" >&2
 fi
 if checkBedFasta $path_data/$opt_p2.bed $path_data/$opt_p2.$opt_fmt; then
-	echo "Info: equal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_fmt"
+	echo "Info: equal Subject seq number between $path_data/$opt_p1.bed and $path_data/$opt_p2.$opt_fmt"
 else
-	echo "Warnings: ineuqal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_fmt" >&2
+	echo "Warnings: ineuqal Subject seq number between $path_data/$opt_p1.bed and $path_data/$opt_p2.$opt_fmt" >&2
 fi
 
 echo -e "\n\n\n"
