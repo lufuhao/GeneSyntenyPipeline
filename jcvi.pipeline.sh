@@ -43,7 +43,7 @@ cat<<HELP
 
 $0 --- Brief Introduction
 
-Version: 20200316
+Version: 20200403
 
 Requirements:
     LAST (http://last.cbrc.jp/)
@@ -63,7 +63,8 @@ Descriptions:
     Steps
       1. Convert GFF3 to BED format
         4column: chr[tab]start[tab]end[tab]ID
-          ID should be the same ith multifasta seqID
+          seqID should be the same ith multifasta seqID
+          Be careful with the sequence names in BED and Fasta
       2. run JCVI to get the raw synteny/anchors
         JCVI use LAST for similarity search
       3. Synteny screen to get high quality anchors
@@ -188,6 +189,26 @@ CmdExists () {
   fi
 }
 
+### checkBedFasta
+### check if number of seqs are equal between BED and Fasta
+checkBedFasta () {
+    local CBFbed=$1;
+    local CBFfasta=$2;
+
+	local NumBed=$(grep -v ^'#' $CBFbed | wc -l)
+	local NumFasta=$(grep -v ^'>' $CBFbed | wc -l)
+	
+	echo -e "\n"
+	echo "Total BED  lines: $NumBed in $CBFbed"
+	echo "Total Fasta seqs: $NumFasta in $CBFfasta"
+	if [ $NumBed -gt 0 ] && [ $NumFasta -gt 0 ] && [ $NumBed -eq $NumFasta ]; then
+		return 0
+	else
+		echo "Warnings: sequence number EQUAL betwen BED and FASTA: $CBFbed : $CBFfasta" >&2
+		return 100
+	fi
+}
+
 
 
 #################### Command test ###################################
@@ -267,6 +288,8 @@ echo "    -p2    $opt_p2"
 echo "    -ul    $opt_useLongest"
 echo "    -ul1   $opt_useQueryL"
 echo "    -ul2   $opt_useSubjectL"
+echo "    -uc1   $opt_uc1"
+echo "    -uc2   $opt_uc2"
 echo "    -d     $opt_d"
 echo "    -type  $opt_type"
 echo "    -key   $opt_key"
@@ -384,16 +407,27 @@ else
 	echo "Warnings: Step${step}: use existing file: $path_data/$opt_p1.$opt_fmt; Delete this if you have new data" >&2
 fi
 if [ ! -z "$opt_uc1" ] && [ -s $opt_uc1 ]; then
-	mv $path_data/$opt_p1.$opt_fmt $path_data/$opt_p1.$opt_fmt.all
-	if [ $? -ne 0 ]; then
-		echo "Error: failed to rename Query file: $path_data/$opt_p1.$opt_fmt" >&2
-		exit 100
+	if [ ! -s $path_data/$opt_p1.$opt_fmt.all ]; then
+		mv $path_data/$opt_p1.$opt_fmt $path_data/$opt_p1.$opt_fmt.all
+		if [ $? -ne 0 ]; then
+			echo "Error: failed to rename Query file: $path_data/$opt_p1.$opt_fmt" >&2
+			exit 100
+		fi
+	else
+		echo "Warnings: existing $path_data/$opt_p1.$opt_fmt.all" >&2
 	fi
-	grep -v ^'#' $path_data/$opt_p1.bed | cut -f 4 | sort -u > $path_data/$opt_p1.$opt_fmt.tmplist
-	seqkit grep -f $path_data/$opt_p1.$opt_fmt.tmplist $path_data/$opt_p1.$opt_fmt.all > $path_data/$opt_p1.$opt_fmt
-	if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p1.$opt_fmt ]; then
-		echo "Error: failed to clean Query BED file: $path_data/$opt_p1.$opt_fmt.all" >&2
-		exit 100
+	if [ ! -s $path_data/$opt_p1.$opt_fmt.tmplist ]; then
+		grep -v ^'#' $path_data/$opt_p1.bed | cut -f 4 | sort -u > $path_data/$opt_p1.$opt_fmt.tmplist
+	fi
+	if [ ! -s $path_data/$opt_p1.$opt_fmt ]; then
+		seqkit grep -f $path_data/$opt_p1.$opt_fmt.tmplist $path_data/$opt_p1.$opt_fmt.all > $path_data/$opt_p1.$opt_fmt
+		if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p1.$opt_fmt ]; then
+			echo "Error: failed to clean Query BED file: $path_data/$opt_p1.$opt_fmt.all" >&2
+			exit 100
+		fi
+	else
+		echo "Warnings: existing $path_data/$opt_p1.$opt_fmt" >&2
+		echo "Warnings: -uc1 option skipped" >&2
 	fi
 fi
 if [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
@@ -416,18 +450,42 @@ else
 	echo "Warnings: Step${step}: use existing file: $path_data/$opt_p2.$opt_fmt; Delete this if you have new data" >&2
 fi
 if [ ! -z "$opt_uc2" ] && [ -s $opt_uc2 ]; then
-	mv $path_data/$opt_p2.$opt_fmt $path_data/$opt_p2.$opt_fmt.all
-	if [ $? -ne 0 ]; then
-		echo "Error: failed to rename Query file: $path_data/$opt_p2.$opt_fmt" >&2
-		exit 100
+	if [ ! -s $path_data/$opt_p2.$opt_fmt.all ]; then
+		mv $path_data/$opt_p2.$opt_fmt $path_data/$opt_p2.$opt_fmt.all
+		if [ $? -ne 0 ]; then
+			echo "Error: failed to rename Query file: $path_data/$opt_p2.$opt_fmt" >&2
+			exit 100
+		fi
+	else
+		echo "Warnings: existing $path_data/$opt_p2.$opt_fmt.all" >&2
+		echo "Warnings: -uc2 option skipped" >&2
 	fi
-	grep -v ^'#' $path_data/$opt_p2.bed | cut -f 4 | sort -u > $path_data/$opt_p2.$opt_fmt.tmplist
-	seqkit grep -f $path_data/$opt_p2.$opt_fmt.tmplist $path_data/$opt_p2.$opt_fmt.all > $path_data/$opt_p2.$opt_fmt
-	if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
-		echo "Error: failed to clean Query BED file: $path_data/$opt_p2.$opt_fmt.all" >&2
-		exit 100
+	if [ ! -s $path_data/$opt_p2.$opt_fmt.tmplist ]; then
+		grep -v ^'#' $path_data/$opt_p2.bed | cut -f 4 | sort -u > $path_data/$opt_p2.$opt_fmt.tmplist
+	fi
+	if [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
+		seqkit grep -f $path_data/$opt_p2.$opt_fmt.tmplist $path_data/$opt_p2.$opt_fmt.all > $path_data/$opt_p2.$opt_fmt
+		if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
+			echo "Error: failed to clean Query BED file: $path_data/$opt_p2.$opt_fmt.all" >&2
+			exit 100
+		fi
+	else
+		echo "Warnings: existing $path_data/$opt_p2.$opt_fmt" >&2
+		echo "Warnings: -uc1 option skipped" >&2
 	fi
 fi
+### double check sequence
+if checkBedFasta $path_data/$opt_p1.bed $path_data/$opt_p1.$opt_fmt; then
+	echo "Info: equal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_fmt"
+else
+	echo "Warnings: ineuqal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_fmt" >&2
+fi
+if checkBedFasta $path_data/$opt_p2.bed $path_data/$opt_p2.$opt_fmt; then
+	echo "Info: equal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_fmt"
+else
+	echo "Warnings: ineuqal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_fmt" >&2
+fi
+
 echo -e "\n\n\n"
 
 
