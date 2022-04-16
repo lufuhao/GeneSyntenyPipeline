@@ -24,18 +24,6 @@ echo "ProgName: $ProgramName"
 RunPath=$PWD
 echo "RunDir: $RunPath"
 
-###echo color
-#Black        0;30     Dark Gray     1;30
-#Red          0;31     Light Red     1;31
-#Green        0;32     Light Green   1;32
-#Brown/Orange 0;33     Yellow        1;33
-#Blue         0;34     Light Blue    1;34
-#Purple       0;35     Light Purple  1;35
-#Cyan         0;36     Light Cyan    1;36
-#Light Gray   0;37     White         1;37
-#RED='\033[0;31m'
-#NC='\033[0m' # No Color
-#printf "I ${RED}love${NC} Stack Overflow\n"
 
 ################# help message ######################################
 help() {
@@ -75,6 +63,8 @@ Options:
   -h   -     Print this help message
   -i1  FILE  Query fasta file in fa.gz or fa format
   -i2  FILE  Subject fasta file in fa.gz or fa format
+  -b1  FILE  Query BED format
+  -b2  FILE  Subject BED format
   -g1  FILE  Query genome annotation in GFF format
   -g2  FILE  Subject genome annotation in GFF format
   -p1  STR   Query Prefix
@@ -139,6 +129,12 @@ opt_useSubjectL=0;
 opt_uc1="";
 opt_uc2="";
 opt_BEDfil=0;
+opt_i1="";
+opt_i2="";
+opt_b1="";
+opt_b2="";
+opt_g1="";
+opt_g2="";
 
 
 #################### Parameters #####################################
@@ -147,6 +143,8 @@ while [ -n "$1" ]; do
     -h) help;shift 1;;
     -i1) opt_i1=$2;shift 2;;
     -i2) opt_i2=$2;shift 2;;
+    -b1) opt_b1=$2;shift 2;;
+    -b2) opt_b2=$2;shift 2;;
     -g1) opt_g1=$2;shift 2;;
     -g2) opt_g2=$2;shift 2;;
     -p1) opt_p1=$2;shift 2;;
@@ -165,13 +163,6 @@ while [ -n "$1" ]; do
     -mp)   opt_mp=$2;shift 2;;
     -mz)   opt_mz=$2;shift 2;;
     -clean) opt_clean=1; shift;;
-    
-    
-#FastQR1Arr=($(echo $2 | tr  "\n"));shift 2;;
-#    -t) opt_t=$2;shift 2;;
-#    -1) seq_rfn=(${seq_rfn[@]} "$2");shift 2;;
-#    -s) opt_s=1;shift 1;;
-#    -a) opt_a=1;shift 1;;
     --) shift;break;;
     -*) echo "error: no such option $1. -h for help" > /dev/stderr;exit 1;;
     *) break;;
@@ -182,18 +173,18 @@ done
 #################### Subfuctions ####################################
 ###Detect command existence
 CmdExists () {
-  if command -v $1 >/dev/null 2>&1; then
-    return 0
-  else
-    return 1
-  fi
+	if command -v $1 >/dev/null 2>&1; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 ### checkBedFasta
 ### check if number of seqs are equal between BED and Fasta
 checkBedFasta () {
-    local CBFbed=$1;
-    local CBFfasta=$2;
+	local CBFbed=$1;
+	local CBFfasta=$2;
 
 	local NumBed=$(grep -v ^'#' $CBFbed | wc -l)
 	local NumFasta=$(grep -v ^'>' $CBFbed | wc -l)
@@ -274,6 +265,20 @@ fi
 
 
 #################### Input and Output ###############################
+opt_i1=$(readlink -m "$opt_i1")
+opt_i2=$(readlink -m "$opt_i2")
+if [ ! -z "$opt_b1" ]; then
+	opt_b1=$(readlink -m "$opt_b1")
+fi
+if [ ! -z "$opt_b2" ]; then
+	opt_b2=$(readlink -m "$opt_b2")
+fi
+if [ ! -z "$opt_g1" ]; then
+	opt_b1=$(readlink -m "$opt_g1")
+fi
+if [ ! -z "$opt_g2" ]; then
+	opt_b2=$(readlink -m "$opt_g2")
+fi
 
 
 
@@ -281,6 +286,8 @@ fi
 echo "################# Parameter check ####################"
 echo "    -i1    $opt_i1"
 echo "    -i2    $opt_i2"
+echo "    -b1    $opt_b1"
+echo "    -b2    $opt_b2"
 echo "    -g1    $opt_g1"
 echo "    -g2    $opt_g2"
 echo "    -p1    $opt_p1"
@@ -314,12 +321,6 @@ else
 fi
 cd $path_data
 
-#
-#zcat Athaliana_167_TAIR10.gene.gff3.gz | python ~/scripts/python/get_the_longest_transcripts.py  > ath_lst_gene.txt
-#sed -i 's/\.v2\.1//g' aly_lst_gene.txt
-#sed -i 's/\.TAIR10//g' ath_lst_gene.txt
-#
-#
 # prepare bed
 echo "Step${step}: Preparing Data"; echo "Step${step}: Preparing Data" >&2;
 if [ ! -s $path_data/$opt_p1.bed ]; then

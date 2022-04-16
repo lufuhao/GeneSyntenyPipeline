@@ -12,7 +12,7 @@ This pipeline was designed to
 
 >      1. Protein/CDS/cDNA multifasta file for both query and subject
 
->      2. GFF3 file
+>      2. GFF3/BED file
 
 >    Steps
 
@@ -20,7 +20,7 @@ This pipeline was designed to
 
 >        4column: chr[tab]start[tab]end[tab]ID
 
->          ID should be the same ith multifasta seqID
+>          ID should be the same with multifasta seqID
 
 >      2. run JCVI to get the raw synteny/anchors
 
@@ -36,15 +36,15 @@ This pipeline was designed to
 
 ## Requirements:
 
-   + [X] LAST (http://last.cbrc.jp/)
+   + [X] [LAST](http://last.cbrc.jp/)
 
-   + [X] get_the_longest_transcripts.py (https://github.com/xuzhougeng/myscripts)
+   + [X] [get_the_longest_transcripts.py](https://github.com/xuzhougeng/myscripts)
 
       * [X] python3
 
-   + [X] seqkit (https://github.com/shenwei356/seqkit)
+   + [X] [seqkit](https://github.com/shenwei356/seqkit)
 
-   + [X] jcvi (https://github.com/tanghaibao/jcvi)
+   + [X] [JCVI](https://github.com/tanghaibao/jcvi)
 
 ---
 
@@ -126,10 +126,10 @@ Example
 
 jcvi.bed.ID.convert.pl jcvi.bed1 convertfile jcvi.bed2
 
-
 ---
 
 ## Author:
+
     Fu-Hao Lu
 
     Professor, PhD
