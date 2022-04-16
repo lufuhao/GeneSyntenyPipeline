@@ -98,33 +98,37 @@ This pipeline was designed to
 
 Example:
 
+```bash
   ./jcvi.pipeline.sh \
-
       -i1 ./sp1.fa.gz -i2 ./sp2.fa.gz -g1 ./sp1.gff.gz -g2 ./sp2.gff.gz \
-
       -p1 sp1 -p2 sp2 -fmt pep -type mRNA -key ID -mp 30 -mz 10
+```
 
 ### jcvi.bed.ID.convert.pl
 
 > This script is used to convert JCVI jcvi.formats.gff bed col4 to a new ID
 
-    ### jcvi.bed1
+    ### jcvi.bed1 input
 
     chr[tab]start[tab]end[tab]ID_bed1[tab]0[tab]strand
 
     
 
-    ### convertfile [2 columns]
+    ### convertfile ID list [2 columns]
 
     ID_bed1[tab]new_ID_bed2
 
-    ### jcvi.bed2
+    
 
+    ### jcvi.bed2 out
+    
     chr[tab]start[tab]end[tab]new_ID_bed2[tab]0[tab]strand
 
 Example
 
+```bash
 jcvi.bed.ID.convert.pl jcvi.bed1 convertfile jcvi.bed2
+```
 
 ---
 
