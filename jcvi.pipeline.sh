@@ -116,7 +116,7 @@ echo -e "\n######################\nProgram $ProgramName initializing ...\n######
 opt_d=$PWD;
 opt_type="mRNA";
 opt_key="ID";
-opt_fmt="pep"
+opt_mt="pep"
 opt_cc=0.7
 opt_nsn=0
 opt_mp=0
@@ -246,11 +246,11 @@ path_plot="$opt_d/4.plot"
 path_1to1="$opt_d/5.1to1"
 
 mt_type=''
-if [[ $opt_fmt =~ ^[pP][eE][pP]$ ]];then
-	opt_fmt='pep'
+if [[ $opt_mt =~ ^[pP][eE][pP]$ ]];then
+	opt_mt='pep'
 	mt_type='prot'
-elif [[ $opt_fmt =~ ^[cC][dD][sS]$ ]]; then
-	opt_fmt='cds'
+elif [[ $opt_mt =~ ^[cC][dD][sS]$ ]]; then
+	opt_mt='cds'
 	mt_type='nucl'
 else
 	echo "Error: unknown molecular type" >&2
@@ -388,103 +388,103 @@ head -n 5 $path_data/$opt_p2.bed
 echo -e "\n\n\n"
 
 # prepare fasta
-if [ ! -s $path_data/$opt_p1.$opt_fmt ]; then
+if [ ! -s $path_data/$opt_p1.$opt_mt ]; then
 	if [ $opt_useQueryL -eq 0 ]; then
 		if [[ $opt_i1 =~ ^.*\.[gG][zZ]$ ]]; then
 			echo "#Step${step} Info: Query in fasta.gz format, decompressing"
-			gunzip -c $opt_i1 > $path_data/$opt_p1.$opt_fmt
+			gunzip -c $opt_i1 > $path_data/$opt_p1.$opt_mt
 		else
 			echo "#Step${step} Info: Query in fasta format, Linking"
-			ln -sf $opt_i1 $path_data/$opt_p1.$opt_fmt
+			ln -sf $opt_i1 $path_data/$opt_p1.$opt_mt
 		fi
 	else
 		echo "#Step${step} Info: Extracting longest Query transcript IDs"
 		if [ ! -s $path_data/$opt_p1.longest.genes ]; then
 			zcat  $opt_g1 | get_the_longest_transcripts.py | cut -f 2 > $path_data/$opt_p1.longest.genes
 		fi
-		seqkit grep -f $path_data/$opt_p1.longest.genes $opt_i1 > $path_data/$opt_p1.$opt_fmt
+		seqkit grep -f $path_data/$opt_p1.longest.genes $opt_i1 > $path_data/$opt_p1.$opt_mt
 	fi
 else
-	echo "Warnings: Step${step}: use existing file: $path_data/$opt_p1.$opt_fmt; Delete this if you have new data" >&2
+	echo "Warnings: Step${step}: use existing file: $path_data/$opt_p1.$opt_mt; Delete this if you have new data" >&2
 fi
 if [ ! -z "$opt_uc1" ] && [ -s $opt_uc1 ]; then
-	if [ ! -s $path_data/$opt_p1.$opt_fmt.all ]; then
-		mv $path_data/$opt_p1.$opt_fmt $path_data/$opt_p1.$opt_fmt.all
+	if [ ! -s $path_data/$opt_p1.$opt_mt.all ]; then
+		mv $path_data/$opt_p1.$opt_mt $path_data/$opt_p1.$opt_mt.all
 		if [ $? -ne 0 ]; then
-			echo "Error: failed to rename Query file: $path_data/$opt_p1.$opt_fmt" >&2
+			echo "Error: failed to rename Query file: $path_data/$opt_p1.$opt_mt" >&2
 			exit 100
 		fi
 	else
-		echo "Warnings: existing $path_data/$opt_p1.$opt_fmt.all" >&2
+		echo "Warnings: existing $path_data/$opt_p1.$opt_mt.all" >&2
 	fi
-	if [ ! -s $path_data/$opt_p1.$opt_fmt.tmplist ]; then
-		grep -v ^'#' $path_data/$opt_p1.bed | cut -f 4 | sort -u > $path_data/$opt_p1.$opt_fmt.tmplist
+	if [ ! -s $path_data/$opt_p1.$opt_mt.tmplist ]; then
+		grep -v ^'#' $path_data/$opt_p1.bed | cut -f 4 | sort -u > $path_data/$opt_p1.$opt_mt.tmplist
 	fi
-	if [ ! -s $path_data/$opt_p1.$opt_fmt ]; then
-		seqkit grep -f $path_data/$opt_p1.$opt_fmt.tmplist $path_data/$opt_p1.$opt_fmt.all > $path_data/$opt_p1.$opt_fmt
-		if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p1.$opt_fmt ]; then
-			echo "Error: failed to clean Query BED file: $path_data/$opt_p1.$opt_fmt.all" >&2
+	if [ ! -s $path_data/$opt_p1.$opt_mt ]; then
+		seqkit grep -f $path_data/$opt_p1.$opt_mt.tmplist $path_data/$opt_p1.$opt_mt.all > $path_data/$opt_p1.$opt_mt
+		if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p1.$opt_mt ]; then
+			echo "Error: failed to clean Query BED file: $path_data/$opt_p1.$opt_mt.all" >&2
 			exit 100
 		fi
 	else
-		echo "Warnings: existing $path_data/$opt_p1.$opt_fmt" >&2
+		echo "Warnings: existing $path_data/$opt_p1.$opt_mt" >&2
 		echo "Warnings: -uc1 option skipped" >&2
 	fi
 fi
-if [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
+if [ ! -s $path_data/$opt_p2.$opt_mt ]; then
 	if [ $opt_useSubjectL -eq 0 ]; then
 		if [[ $opt_i2 =~ ^.*\.[gG][zZ]$ ]]; then
 			echo "#Step${step} Info: Subject in fasta.gz format, decompressing"
-			gunzip -c $opt_i2 > $path_data/$opt_p2.$opt_fmt
+			gunzip -c $opt_i2 > $path_data/$opt_p2.$opt_mt
 		else
 			echo "#Step${step} Info: Subject in fasta format, Linking"
-			ln -sf $opt_i2 $path_data/$opt_p2.$opt_fmt
+			ln -sf $opt_i2 $path_data/$opt_p2.$opt_mt
 		fi
 	else
 		echo "#Step${step} Info: Extracting longest Subject transcript IDs"
 		if [ ! -s $path_data/$opt_p2.longest.genes ]; then
 			zcat  $opt_g2 | get_the_longest_transcripts.py | cut -f 2 > $path_data/$opt_p2.longest.genes
 		fi
-		seqkit grep -f $path_data/$opt_p2.longest.genes $opt_i2 > $path_data/$opt_p2.$opt_fmt
+		seqkit grep -f $path_data/$opt_p2.longest.genes $opt_i2 > $path_data/$opt_p2.$opt_mt
 	fi
 else
-	echo "Warnings: Step${step}: use existing file: $path_data/$opt_p2.$opt_fmt; Delete this if you have new data" >&2
+	echo "Warnings: Step${step}: use existing file: $path_data/$opt_p2.$opt_mt; Delete this if you have new data" >&2
 fi
 if [ ! -z "$opt_uc2" ] && [ -s $opt_uc2 ]; then
-	if [ ! -s $path_data/$opt_p2.$opt_fmt.all ]; then
-		mv $path_data/$opt_p2.$opt_fmt $path_data/$opt_p2.$opt_fmt.all
+	if [ ! -s $path_data/$opt_p2.$opt_mt.all ]; then
+		mv $path_data/$opt_p2.$opt_mt $path_data/$opt_p2.$opt_mt.all
 		if [ $? -ne 0 ]; then
-			echo "Error: failed to rename Query file: $path_data/$opt_p2.$opt_fmt" >&2
+			echo "Error: failed to rename Query file: $path_data/$opt_p2.$opt_mt" >&2
 			exit 100
 		fi
 	else
-		echo "Warnings: existing $path_data/$opt_p2.$opt_fmt.all" >&2
+		echo "Warnings: existing $path_data/$opt_p2.$opt_mt.all" >&2
 		echo "Warnings: -uc2 option skipped" >&2
 	fi
-	if [ ! -s $path_data/$opt_p2.$opt_fmt.tmplist ]; then
-		grep -v ^'#' $path_data/$opt_p2.bed | cut -f 4 | sort -u > $path_data/$opt_p2.$opt_fmt.tmplist
+	if [ ! -s $path_data/$opt_p2.$opt_mt.tmplist ]; then
+		grep -v ^'#' $path_data/$opt_p2.bed | cut -f 4 | sort -u > $path_data/$opt_p2.$opt_mt.tmplist
 	fi
-	if [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
-		seqkit grep -f $path_data/$opt_p2.$opt_fmt.tmplist $path_data/$opt_p2.$opt_fmt.all > $path_data/$opt_p2.$opt_fmt
-		if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p2.$opt_fmt ]; then
-			echo "Error: failed to clean Query BED file: $path_data/$opt_p2.$opt_fmt.all" >&2
+	if [ ! -s $path_data/$opt_p2.$opt_mt ]; then
+		seqkit grep -f $path_data/$opt_p2.$opt_mt.tmplist $path_data/$opt_p2.$opt_mt.all > $path_data/$opt_p2.$opt_mt
+		if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p2.$opt_mt ]; then
+			echo "Error: failed to clean Query BED file: $path_data/$opt_p2.$opt_mt.all" >&2
 			exit 100
 		fi
 	else
-		echo "Warnings: existing $path_data/$opt_p2.$opt_fmt" >&2
+		echo "Warnings: existing $path_data/$opt_p2.$opt_mt" >&2
 		echo "Warnings: -uc1 option skipped" >&2
 	fi
 fi
 ### double check sequence
-if checkBedFasta $path_data/$opt_p1.bed $path_data/$opt_p1.$opt_fmt; then
-	echo "Info: equal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_fmt"
+if checkBedFasta $path_data/$opt_p1.bed $path_data/$opt_p1.$opt_mt; then
+	echo "Info: equal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_mt"
 else
-	echo "Warnings: ineuqal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_fmt" >&2
+	echo "Warnings: ineuqal Query seq number between $path_data/$opt_p1.bed and $path_data/$opt_p1.$opt_mt" >&2
 fi
-if checkBedFasta $path_data/$opt_p2.bed $path_data/$opt_p2.$opt_fmt; then
-	echo "Info: equal Subject seq number between $path_data/$opt_p1.bed and $path_data/$opt_p2.$opt_fmt"
+if checkBedFasta $path_data/$opt_p2.bed $path_data/$opt_p2.$opt_mt; then
+	echo "Info: equal Subject seq number between $path_data/$opt_p1.bed and $path_data/$opt_p2.$opt_mt"
 else
-	echo "Warnings: ineuqal Subject seq number between $path_data/$opt_p1.bed and $path_data/$opt_p2.$opt_fmt" >&2
+	echo "Warnings: ineuqal Subject seq number between $path_data/$opt_p1.bed and $path_data/$opt_p2.$opt_mt" >&2
 fi
 
 echo -e "\n\n\n"
@@ -503,8 +503,8 @@ echo "Step${step}: run jcvi.compara.catalog ortholog"; echo "Step${step}: run jc
 if [ ! -s $path_ortholog/$opt_p1.$opt_p2.anchors ]; then
 	ln -sf $path_data/$opt_p1.bed $path_ortholog/$opt_p1.bed
 	ln -sf $path_data/$opt_p2.bed $path_ortholog/$opt_p2.bed
-	ln -sf $path_data/$opt_p1.$opt_fmt $path_ortholog/$opt_p1.$opt_fmt
-	ln -sf $path_data/$opt_p2.$opt_fmt $path_ortholog/$opt_p2.$opt_fmt
+	ln -sf $path_data/$opt_p1.$opt_mt $path_ortholog/$opt_p1.$opt_mt
+	ln -sf $path_data/$opt_p2.$opt_mt $path_ortholog/$opt_p2.$opt_mt
 	
 	CatalogOptions=""
 	if [ $opt_nsn -eq 1 ]; then
