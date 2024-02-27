@@ -71,7 +71,7 @@ Options:
   -p2  STR   Subject Prefix
   -ul  -     Use longest transcript for each geneIDs both query and subject
   -ul1 -     Use longest transcript for each query geneIDs
-  -ul2 -     Use longest transcript for each subject geneIDs 
+  -ul2 -     Use longest transcript for each subject geneIDs
   -uc1 FILE  Use specified chromosome IDs for analysis in -g1
   -uc2 FILE  Use specified chromosome IDs for analysis in -g2
   -d   DIR   Output directory, default: .
@@ -188,7 +188,7 @@ checkBedFasta () {
 
 	local NumBed=$(grep -v ^'#' $CBFbed | wc -l)
 	local NumFasta=$(grep -v ^'>' $CBFbed | wc -l)
-	
+
 	echo -e "\n"
 	echo "Total BED  lines: $NumBed in $CBFbed"
 	echo "Total Fasta seqs: $NumFasta in $CBFfasta"
@@ -205,30 +205,30 @@ checkBedFasta () {
 #################### Command test ###################################
 CmdExists 'lastal'
 if [ $? -ne 0 ]; then
-	echo "Error: CMD 'lastal' in PROGRAM 'LAST' (http://last.cbrc.jp/) is required but not found.  Aborting..." >&2 
+	echo "Error: CMD 'lastal' in PROGRAM 'LAST' (http://last.cbrc.jp/) is required but not found.  Aborting..." >&2
 	exit 127
 fi
 CmdExists 'lastdb'
 if [ $? -ne 0 ]; then
-	echo "Error: CMD 'lastdb' in PROGRAM 'LAST' (http://last.cbrc.jp/) is required but not found.  Aborting..." >&2 
+	echo "Error: CMD 'lastdb' in PROGRAM 'LAST' (http://last.cbrc.jp/) is required but not found.  Aborting..." >&2
 	exit 127
 fi
 if [ $opt_testLongest -eq 1 ]; then
 	CmdExists 'get_the_longest_transcripts.py'
 	if [ $? -ne 0 ]; then
-		echo "Error: script 'get_the_longest_transcripts.py' on https://github.com/xuzhougeng/myscripts is required but not found.  Aborting..." >&2 
+		echo "Error: script 'get_the_longest_transcripts.py' on https://github.com/xuzhougeng/myscripts is required but not found.  Aborting..." >&2
 		exit 127
 	fi
 	CmdExists 'seqkit'
 	if [ $? -ne 0 ]; then
-		echo "Error: CMD 'seqkit' in PROGRAM 'seqkit' (https://github.com/shenwei356/seqkit) is required but not found.  Aborting..." >&2 
+		echo "Error: CMD 'seqkit' in PROGRAM 'seqkit' (https://github.com/shenwei356/seqkit) is required but not found.  Aborting..." >&2
 		exit 127
 	fi
 fi
 if [ $opt_BEDfil -eq 1 ]; then
 	CmdExists 'jcvi.bed.clean.pl'
 	if [ $? -ne 0 ]; then
-		echo "Error: script 'jcvi.bed.clean.pl' in PROGRAM 'GeneSyntenyPipeline' (https://github.com/lufuhao/GeneSyntenyPipeline) is required but not found.  Aborting..." >&2 
+		echo "Error: script 'jcvi.bed.clean.pl' in PROGRAM 'GeneSyntenyPipeline' (https://github.com/lufuhao/GeneSyntenyPipeline) is required but not found.  Aborting..." >&2
 		exit 127
 	fi
 fi
@@ -274,10 +274,10 @@ if [ ! -z "$opt_b2" ]; then
 	opt_b2=$(readlink -m "$opt_b2")
 fi
 if [ ! -z "$opt_g1" ]; then
-	opt_b1=$(readlink -m "$opt_g1")
+	opt_g1=$(readlink -m "$opt_g1")
 fi
 if [ ! -z "$opt_g2" ]; then
-	opt_b2=$(readlink -m "$opt_g2")
+	opt_g2=$(readlink -m "$opt_g2")
 fi
 
 
@@ -325,7 +325,7 @@ cd $path_data
 echo "Step${step}: Preparing Data"; echo "Step${step}: Preparing Data" >&2;
 if [ ! -s $path_data/$opt_p1.bed ]; then
 	if [ $opt_useLongest -eq 0 ]; then
-		python2 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g1 > $path_data/$opt_p1.bed
+		python3 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g1 > $path_data/$opt_p1.bed
 		if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p1.bed ]; then
 			echo "Error: Step${step}: Failed to convert query GFF to BED" >&2
 			echo "CMD used: python2 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g1 > $path_data/$opt_p1.bed"
@@ -333,7 +333,7 @@ if [ ! -s $path_data/$opt_p1.bed ]; then
 		fi
 	else
 		zcat  $opt_g1 | get_the_longest_transcripts.py | cut -f 2 > $path_data/$opt_p1.longest.genes
-		python2 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g1 > $path_data/$opt_p1.all.bed
+		python3 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g1 > $path_data/$opt_p1.all.bed
 		grep -f $path_data/$opt_p1.longest.genes $path_data/$opt_p1.all.bed > $path_data/$opt_p1.bed
 	fi
 else
@@ -356,15 +356,15 @@ head -n 5 $path_data/$opt_p1.bed
 
 if [ ! -s $path_data/$opt_p2.bed ]; then
 	if [ $opt_useLongest -eq 0 ]; then
-		python2 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g2 > $path_data/$opt_p2.bed
+		python3 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g2 > $path_data/$opt_p2.bed
 		if [ $? -ne 0 ] || [ ! -s $path_data/$opt_p2.bed ]; then
 			echo "Error: Step${step}: Failed to convert subject GFF to BED" >&2
-			echo "CMD used: python2 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g2 > $path_data/$opt_p2.bed"
+			echo "CMD used: python3 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g2 > $path_data/$opt_p2.bed"
 			exit 100;
 		fi
 	else
 		zcat  $opt_g2 | get_the_longest_transcripts.py > $path_data/$opt_p2.longest.genes
-		python2 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g2 > $path_data/$opt_p2.all.bed
+		python3 -m jcvi.formats.gff bed --type=$opt_type --key=$opt_key $opt_g2 > $path_data/$opt_p2.all.bed
 		grep -f $path_data/$opt_p2.longest.genes $path_data/$opt_p2.all.bed > $path_data/$opt_p2.bed
 	fi
 else
@@ -381,7 +381,7 @@ if [ ! -z "$opt_uc2" ] && [ -s $opt_uc2 ]; then
 		echo "Error: failed to clean Subject BED file: $path_data/$opt_p2.bed.all" >&2
 		exit 100
 	fi
-	
+
 fi
 echo "#Step${step} Info: top 5 lines pf subject BED"
 head -n 5 $path_data/$opt_p2.bed
@@ -505,15 +505,15 @@ if [ ! -s $path_ortholog/$opt_p1.$opt_p2.anchors ]; then
 	ln -sf $path_data/$opt_p2.bed $path_ortholog/$opt_p2.bed
 	ln -sf $path_data/$opt_p1.$opt_mt $path_ortholog/$opt_p1.$opt_mt
 	ln -sf $path_data/$opt_p2.$opt_mt $path_ortholog/$opt_p2.$opt_mt
-	
+
 	CatalogOptions=""
 	if [ $opt_nsn -eq 1 ]; then
 		CatalogOptions="--no_strip_names"
 	fi
-	python -m jcvi.compara.catalog ortholog $opt_p1 $opt_p2 $CatalogOptions --dbtype $mt_type --cscore=$opt_cc > $opt_p1.$opt_p2.compara.catalog.ortholog.log 2>&1
+	python3 -m jcvi.compara.catalog ortholog $opt_p1 $opt_p2 $CatalogOptions --dbtype $mt_type --cscore=$opt_cc > $opt_p1.$opt_p2.compara.catalog.ortholog.log 2>&1
 	if [ $? -ne 0 ] || [ ! -s $path_ortholog/$opt_p1.$opt_p2.anchors ]; then
 		echo "Error: Step${step}: jcvi.compara.catalog ortholog running error" >&2
-		echo "CMD used: python -m jcvi.compara.catalog ortholog $opt_p1 $opt_p2 $CatalogOptions --dbtype $mt_type --cscore=$opt_cc" >&2
+		echo "CMD used: python3 -m jcvi.compara.catalog ortholog $opt_p1 $opt_p2 $CatalogOptions --dbtype $mt_type --cscore=$opt_cc" >&2
 		exit 100
 	fi
 fi
@@ -523,12 +523,12 @@ fi
 
 #Pairwise synteny visualization using dot plot.
 if [ ! -s $opt_p1.$opt_p2.anchors.dotplot.pdf ]; then
-	python -m jcvi.graphics.dotplot $opt_p1.$opt_p2.anchors -o $opt_p1.$opt_p2.anchors.dotplot.pdf --dpi=600 --format=pdf --font=Arial > $opt_p1.$opt_p2.graphics.dotplot.log 2>&1
+	python3 -m jcvi.graphics.dotplot $opt_p1.$opt_p2.anchors -o $opt_p1.$opt_p2.anchors.dotplot.pdf --dpi=600 --format=pdf --font=Arial > $opt_p1.$opt_p2.graphics.dotplot.log 2>&1
 fi
 
 #We could also quick test if the synteny pattern is indeed 1:1, by running:
 if [ ! -s $opt_p1.$opt_p2.depth.pdf ]; then
-	python -m jcvi.compara.synteny depth --histogram $opt_p1.$opt_p2.anchors > $opt_p1.$opt_p2.compara.synteny.depth.log 2>&1
+	python3 -m jcvi.compara.synteny depth --histogram $opt_p1.$opt_p2.anchors > $opt_p1.$opt_p2.compara.synteny.depth.log 2>&1
 fi
 echo -e "\n\n\n"
 
@@ -547,10 +547,10 @@ ln -sf $path_ortholog/$opt_p1.$opt_p2.anchors $path_synteny/$opt_p1.$opt_p2.anch
 ln -sf $path_data/$opt_p1.bed $path_synteny/$opt_p1.bed
 ln -sf $path_data/$opt_p2.bed $path_synteny/$opt_p2.bed
 if [ ! -s $opt_p1.$opt_p2.anchors.new ]; then
-	python -m jcvi.compara.synteny screen --minspan=$opt_mp --simple --minsize=$opt_mz $opt_p1.$opt_p2.anchors $opt_p1.$opt_p2.anchors.new > $opt_p1.$opt_p2.compara.synteny.screen.log 2>&1
+	python3 -m jcvi.compara.synteny screen --minspan=$opt_mp --simple --minsize=$opt_mz $opt_p1.$opt_p2.anchors $opt_p1.$opt_p2.anchors.new > $opt_p1.$opt_p2.compara.synteny.screen.log 2>&1
 	if [ $? -ne 0 ] || [ ! -s $path_synteny/$opt_p1.$opt_p2.anchors.new ] || [ ! -s $path_synteny/$opt_p1.$opt_p2.anchors.simple ]; then
 		echo "Error: Step${step}: jcvi.compara.synteny screen running error" >&2
-		echo "CMD used: python -m jcvi.compara.synteny screen --minspan=$opt_mp --simple --minsize=$opt_mz $opt_p1.$opt_p2.anchors $opt_p1.$opt_p2.anchors.new" >&2
+		echo "CMD used: python3 -m jcvi.compara.synteny screen --minspan=$opt_mp --simple --minsize=$opt_mz $opt_p1.$opt_p2.anchors $opt_p1.$opt_p2.anchors.new" >&2
 		exit 100
 	fi
 fi
@@ -602,16 +602,16 @@ fi
 #perl -i -lane '$i="";$j=""; $line=$_; $F[0]=~s/^.*\*//; if ($F[0]=~/$TraesCS(\d+)[ABD]\d+G\d+$/) {$i=$1;}else{print STDERR "Error: no match1";} if ($F[2]=~/$TraesCS(\d+)[ABD]\d+G\d+$/) {$j=$1;}else{print STDERR "Error: no match2";} print STDERR "Info: i: $i; j : $j"; if ($i eq $j) {$line="red*".$line;}else{$line="black*".$line;} print $line;' aa.bb.anchors.simple
 
 if [ ! -s $path_plot/$opt_p1.$opt_p2.pdf ]; then
-	python -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
+	python3 -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
 	if [ $? -ne 0 ] || [ ! -s karyotype.pdf ]; then
 		echo "Error: Step${step}: Failed to run jcvi.graphics.karyotype for seqids: $path_plot/$opt_p1.$opt_p2.seqids layout:$path_plot/$opt_p1.$opt_p2.layout" >&2
-		echo "CMD used: python -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout"
+		echo "CMD used: python3 -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout"
 		exit 100
 	fi
 	mv karyotype.pdf $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf
-	python -m jcvi.graphics.karyotype --dpi=600 --format=eps --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
+	python3 -m jcvi.graphics.karyotype --dpi=600 --format=eps --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
 	mv karyotype.eps $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.eps
-	python -m jcvi.graphics.karyotype --dpi=600 --format=png --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
+	python3 -m jcvi.graphics.karyotype --dpi=600 --format=png --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
 	mv karyotype.png $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.png
 fi
 echo -e "\n\n\n"
