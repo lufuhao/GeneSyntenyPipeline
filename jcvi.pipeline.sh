@@ -76,7 +76,7 @@ Options:
   -uc2 FILE  Use specified chromosome IDs for analysis in -g2
   -d   DIR   Output directory, default: .
   -mt  STR   Molecular type: cds/pep, default:pep
-  -type STR  GFF feature to be extracted, default: mRNA
+  -type STR  GFF feature to be extracted, default: gene
   -key  STR  GFF feature to seqID: ID/Name, default: ID
   -cc  FLOAT csscore cutoff for jcvi.compara.catalog ortholog, default: 0.7
   -nsn  -    Do not strip alternative splicing (e.g. At5g06540.1 ->
@@ -114,7 +114,7 @@ echo -e "\n######################\nProgram $ProgramName initializing ...\n######
 
 #################### Initializing ###################################
 opt_d=$PWD;
-opt_type="mRNA";
+opt_type="gene";
 opt_key="ID";
 opt_mt="pep"
 opt_cc=0.7
