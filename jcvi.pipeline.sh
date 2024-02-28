@@ -31,7 +31,7 @@ cat<<HELP
 
 $0 --- Brief Introduction
 
-Version: 20200403
+Version: 20240228
 
 Requirements:
     LAST (http://last.cbrc.jp/)
@@ -83,7 +83,9 @@ Options:
           At5g06540) [default: False]
           --no_strip_names jcvi.compara.catalog ortholog
   -mp  INT   minspan for jcvi.compara.synteny screen, default: 0
+                Only blocks with span >= [default: 0]
   -mz  INT   minsize for jcvi.compara.synteny screen, default: 0
+                Only blocks with anchors >= [default: 0]
   -clean -   Clean Temporary files:
                 * lastdb files
 
@@ -92,7 +94,7 @@ Options:
 Example:
   $0 \\
       -i1 ./sp1.fa.gz -i2 ./sp2.fa.gz -g1 ./sp1.gff.gz -g2 ./sp2.gff.gz \\
-      -p1 sp1 -p2 sp2 -mt pep -type mRNA -key ID -mp 30 -mz 10 -nsn
+      -p1 sp1 -p2 sp2 -mt pep -type gene -key ID -mp 30 -mz 10
 
 Author:
   Fu-Hao Lu
@@ -568,7 +570,6 @@ fi
 cd $path_plot
 echo "Step${step}: run jcvi.graphics.karyotype"; echo "Step${step}: run jcvi.graphics.karyotype" >&2;
 
-
 ln -sf $path_data/$opt_p1.bed $path_plot/$opt_p1.bed
 ln -sf $path_data/$opt_p2.bed $path_plot/$opt_p2.bed
 ln -sf $path_synteny/$opt_p1.$opt_p2.anchors.simple $path_plot/
@@ -597,22 +598,18 @@ if [ ! -s $path_plot/$opt_p1.$opt_p2.layout ]; then
 	echo "e, 0, 1, $opt_p1.$opt_p2.anchors.simple" >> $path_plot/$opt_p1.$opt_p2.layout
 fi
 
-
 #utils/webcolors.py
 #perl -i -lane '$i="";$j=""; $line=$_; $F[0]=~s/^.*\*//; if ($F[0]=~/$TraesCS(\d+)[ABD]\d+G\d+$/) {$i=$1;}else{print STDERR "Error: no match1";} if ($F[2]=~/$TraesCS(\d+)[ABD]\d+G\d+$/) {$j=$1;}else{print STDERR "Error: no match2";} print STDERR "Info: i: $i; j : $j"; if ($i eq $j) {$line="red*".$line;}else{$line="black*".$line;} print $line;' aa.bb.anchors.simple
 
 if [ ! -s $path_plot/$opt_p1.$opt_p2.pdf ]; then
-	python3 -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
-	if [ $? -ne 0 ] || [ ! -s karyotype.pdf ]; then
+	python3 -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.pdf.log 2>&1
+	if [ $? -ne 0 ] || [ ! -s "$path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf" ]; then
 		echo "Error: Step${step}: Failed to run jcvi.graphics.karyotype for seqids: $path_plot/$opt_p1.$opt_p2.seqids layout:$path_plot/$opt_p1.$opt_p2.layout" >&2
-		echo "CMD used: python3 -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout"
+		echo "CMD used: python3 -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout"
 		exit 100
 	fi
-	mv karyotype.pdf $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf
-	python3 -m jcvi.graphics.karyotype --dpi=600 --format=eps --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
-	mv karyotype.eps $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.eps
-	python3 -m jcvi.graphics.karyotype --dpi=600 --format=png --font=Arial $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.log 2>&1
-	mv karyotype.png $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.png
+	python3 -m jcvi.graphics.karyotype --dpi=600 --format=eps --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.eps $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.eps.log 2>&1
+	python3 -m jcvi.graphics.karyotype --dpi=600 --format=png --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.png $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.png.log 2>&1
 fi
 echo -e "\n\n\n"
 
@@ -654,4 +651,5 @@ fi
 
 #list.merger.pl Final.AABBDD.uniq "undef" final.uniq dd.aa.anchors.new.uniq dd.bb.anchors.new.uniq
 
+echo -e "\n\n\n### DONE ###\n"
 exit 0
