@@ -589,7 +589,17 @@ if [ ! -s $path_plot/$opt_p1.$opt_p2.seqids ]; then
 fi
 
 #layout
-#The whole canvas is 0-1 on x-axis and 0-1 on y-axis. First, three columns specify the position of the track. Then rotation, color, label, vertical alignment (va), and then the genome BED file. Track 0 is now grape, track 1 is now peach. The next stanza specifies what edges to draw between the tracks. e, 0, 1 asks to draw edges between track 0 and 1, using information from the .simple file.
+#The whole canvas is 0-1 on x-axis and 0-1 on y-axis. Then ,
+# col 1,2,3: three columns specify the position of the track.
+# col 4: rotation
+# col 5: color
+# col 6: label
+# col 7: vertical alignment (va)
+# col 8: the genome BED file.
+#The next stanza specifies what edges to draw between the tracks
+# col1,2,3: e, 0, 1 asks to draw edges between track 0 and 1
+# col 4: using information from the .simple file.
+#            只需要将想要高亮的那一行syntenic relationship的行首加g*，其中g代表绿色，也可以改成r*,那样就成了红色
 if [ ! -s $path_plot/$opt_p1.$opt_p2.layout ]; then
 	echo "# y, xstart, xend, rotation, color, label, va, bed, label_va" > $path_plot/$opt_p1.$opt_p2.layout
 	echo ".6,     .1,    .8,       0,      m, $opt_p1, top, $opt_p1.bed, center" >> $path_plot/$opt_p1.$opt_p2.layout
