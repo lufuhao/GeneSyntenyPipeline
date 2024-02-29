@@ -594,8 +594,9 @@ fi
 # col 4: rotation
 # col 5: color
 # col 6: label
-# col 7: vertical alignment (va)
+# col 7: vertical alignment (va): top/bottom/center
 # col 8: the genome BED file.
+# col 9: top/bottom/center
 #The next stanza specifies what edges to draw between the tracks
 # col1,2,3: e, 0, 1 asks to draw edges between track 0 and 1
 # col 4: using information from the .simple file.
@@ -612,14 +613,14 @@ fi
 #perl -i -lane '$i="";$j=""; $line=$_; $F[0]=~s/^.*\*//; if ($F[0]=~/$TraesCS(\d+)[ABD]\d+G\d+$/) {$i=$1;}else{print STDERR "Error: no match1";} if ($F[2]=~/$TraesCS(\d+)[ABD]\d+G\d+$/) {$j=$1;}else{print STDERR "Error: no match2";} print STDERR "Info: i: $i; j : $j"; if ($i eq $j) {$line="red*".$line;}else{$line="black*".$line;} print $line;' aa.bb.anchors.simple
 
 if [ ! -s $path_plot/$opt_p1.$opt_p2.pdf ]; then
-	python3 -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.pdf.log 2>&1
+	python3 -m jcvi.graphics.karyotype --dpi=600 --format=pdf  --keep-chrlabels --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.pdf.log 2>&1
 	if [ $? -ne 0 ] || [ ! -s "$path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf" ]; then
 		echo "Error: Step${step}: Failed to run jcvi.graphics.karyotype for seqids: $path_plot/$opt_p1.$opt_p2.seqids layout:$path_plot/$opt_p1.$opt_p2.layout" >&2
-		echo "CMD used: python3 -m jcvi.graphics.karyotype --dpi=600 --format=pdf --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout"
+		echo "CMD used: python3 -m jcvi.graphics.karyotype --dpi=600  --keep-chrlabels --format=pdf --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.pdf $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout"
 		exit 100
 	fi
-	python3 -m jcvi.graphics.karyotype --dpi=600 --format=eps --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.eps $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.eps.log 2>&1
-	python3 -m jcvi.graphics.karyotype --dpi=600 --format=png --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.png $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.png.log 2>&1
+	python3 -m jcvi.graphics.karyotype --dpi=600 --format=eps  --keep-chrlabels --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.eps $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.eps.log 2>&1
+	python3 -m jcvi.graphics.karyotype --dpi=600 --format=png  --keep-chrlabels --font=Arial --outfile $path_plot/$opt_p1.$opt_p2.cscore-$opt_cc.png $path_plot/$opt_p1.$opt_p2.seqids $path_plot/$opt_p1.$opt_p2.layout > $opt_p1.$opt_p2.graphics.karyotype.png.log 2>&1
 fi
 echo -e "\n\n\n"
 
